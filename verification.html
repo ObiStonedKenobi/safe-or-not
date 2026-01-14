@@ -78,6 +78,34 @@
 
   <h1>Scam or Safe – Verification Tool</h1>
 
+  <div class="card">
+    <h2>Disclaimer & Consent</h2>
+    <p>
+      This tool is designed to help you evaluate whether a connection or device setup looks more like a
+      normal user or a potentially risky/scam environment. It does this by collecting technical information
+      that any website can normally access through your browser.
+    </p>
+    <p><strong>After you click "Run Verification", this page will collect and show the following categories of information:</strong></p>
+
+    <ul>
+      <li><strong>Network information:</strong> Public IP address, city, region, country, ISP, ASN.</li>
+      <li><strong>Device & browser:</strong> Browser name and version, operating system, platform, CPU core count, approximate RAM (if exposed), language settings, cookie and Do Not Track settings.</li>
+      <li><strong>Screen & display:</strong> Screen resolution, available screen size, device pixel ratio, color depth, window size.</li>
+      <li><strong>Environment:</strong> Timezone name, UTC offset, local time, referrer, timestamp.</li>
+      <li><strong>Input & capabilities:</strong> Touch support details, basic feature support (storage, WebRTC, etc.).</li>
+      <li><strong>Fingerprinting-related signals:</strong> WebGL vendor and renderer (GPU info), WebGL support status, a canvas-based fingerprint string, a basic audio fingerprint sample.</li>
+      <li><strong>Protection indicators:</strong> Basic ad-block/tracking-protection detection, whether some privacy features appear enabled.</li>
+    </ul>
+
+    <p class="small">
+      The collected information will:
+      <br>1) Be displayed clearly on this page after you run the test.
+      <br>2) Be sent to <strong>your private Discord webhook</strong> for your own analysis.
+      <br>This tool is for your own testing and verification only.
+    </p>
+
+    <p><strong>By clicking "Run Verification", you consent to this data being collected, shown to you, and sent to your Discord webhook.</strong></p>
+
     <button id="runBtn">Run Verification</button>
     <div id="runStatus" class="status"></div>
   </div>
@@ -90,6 +118,12 @@
     </p>
     <div id="score" class="score">–</div>
     <div id="scoreExplanation" class="small"></div>
+  </div>
+
+  <div class="card">
+    <h2>Collected Technical Information</h2>
+    <p class="small">This is everything this page actually sees and uses. It’s the same data sent to your webhook.</p>
+    <pre id="results">No data collected yet. Click "Run Verification" above.</pre>
   </div>
 
 <script>
@@ -513,6 +547,6 @@ Touch Support: maxPoints=${basic.touchSupport.maxTouchPoints}, touchEvent=${basi
 
   runBtn.addEventListener("click", runVerification);
 </script>
-  
+
 </body>
 </html>
